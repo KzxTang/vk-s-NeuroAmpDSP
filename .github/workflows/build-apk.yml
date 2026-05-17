@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,6 +26,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # 缓存 Gradle，加速后续构建
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Install dependencies
         working-directory: ./app
         run: flutter pub get
@@ -34,16 +45,16 @@ jobs:
         working-directory: ./app
         run: flutter build apk --debug
 
+      # （可选）诊断步骤：查看生成的 APK 文件位置，方便排错
+      - name: Show APK location
+        if: always()
+        run: |
+          echo "=== Searching for APK files ==="
+          find . -name "*.apk" -type f || echo "No APK found!"
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: neuroamp-debug-apk
-          path: "app/build/**/outputs/**/*.apk"      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: neuroamp-debug-apk
-          # 核心防爆改动：使用通配符。无论 Flutter 把 APK 藏在哪层目录，都能精准抓取，彻底避免找不到文件的报错
-          path: app/build/**/outputs/**/*.apk        with:
-          name: neuroamp-debug-apk
-          # 核心防爆改动：使用通配符。无论 Flutter 把 APK 藏在哪层目录，都能精准抓取，彻底避免找不到文件的报错
-          path: build/**/outputs/**/*.apk
+          # 精确匹配 Flutter 默认输出目录
+          path: app/build/app/outputs/flutter-apk/*.apk
