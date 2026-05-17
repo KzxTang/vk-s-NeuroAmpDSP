@@ -11,19 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: false
+          channel: 'stable'
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
@@ -35,28 +36,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: neuroamp-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 30      - name: Upload APK to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: neuroamp-debug-apk
-          path: app/android/build/app/outputs/apk/debug/app-debug.apk
-          retention-days: 30      - name: Upload APK to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: neuroamp-debug-apk
-          path: app/android/build/app/outputs/apk/debug/app-debug.apk
-          retention-days: 30      - name: Upload APK to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: neuroamp-debug-apk
-          path: app/android/build/app/outputs/apk/debug/app-debug.apk
-          retention-days: 30          cd app/android
-          flutter build apk --debug
-
-      - name: Upload APK to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: neuroamp-debug-apk
-          path: app/android/build/app/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+          # 核心防爆改动：使用通配符。无论 Flutter 把 APK 藏在哪层目录，都能精准抓取，彻底避免找不到文件的报错
+          path: build/**/outputs/**/*.apk
