@@ -11,30 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
           cache: false
 
-      - name: Get Flutter dependencies
+      - name: Install dependencies
         run: flutter pub get
 
       - name: Build APK (Debug)
-        run: |
-          cd app/android
-          flutter build apk --debug
+        run: flutter build apk --debug
 
-      - name: Upload APK to artifacts
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neuroamp-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30      - name: Upload APK to artifacts
         uses: actions/upload-artifact@v4
         with:
           name: neuroamp-debug-apk
