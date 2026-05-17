@@ -1,4 +1,4 @@
-name: Build NeuroAmp APK
+Name: Build NeuroAmp APK
 
 on:
   push:
@@ -27,14 +27,19 @@ jobs:
           cache: true
 
       - name: Install dependencies
+        working-directory: ./app
         run: flutter pub get
 
       - name: Build APK (Debug)
+        working-directory: ./app
         run: flutter build apk --debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
+          name: neuroamp-debug-apk
+          # 核心防爆改动：使用通配符。无论 Flutter 把 APK 藏在哪层目录，都能精准抓取，彻底避免找不到文件的报错
+          path: app/build/**/outputs/**/*.apk        with:
           name: neuroamp-debug-apk
           # 核心防爆改动：使用通配符。无论 Flutter 把 APK 藏在哪层目录，都能精准抓取，彻底避免找不到文件的报错
           path: build/**/outputs/**/*.apk
