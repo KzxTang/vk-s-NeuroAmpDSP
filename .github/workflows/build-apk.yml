@@ -3,8 +3,8 @@ name: Build NeuroAmp APK
 on:
   push:
     branches:
-      - feature/github-actions-build
       - main
+      - feature/github-actions-build
   workflow_dispatch:
 
 jobs:
@@ -36,8 +36,35 @@ jobs:
           flutter build apk --debug
 
       - name: Upload APK to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: neuroamp-debug-apk
           path: app/android/build/app/outputs/apk/debug/app-debug.apk
           retention-days: 30
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: NeuroAmp Debug Build #${{ github.run_number }}
+          body: |
+            自动编译的 NeuroAmp APK
+            
+            分支: ${{ github.ref }}
+            提交: ${{ github.sha }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/android/build/app/outputs/apk/debug/app-debug.apk
+          asset_name: NeuroAmp-Debug-${{ github.run_number }}.apk
+          asset_content_type: application/vnd.android.package-archive
